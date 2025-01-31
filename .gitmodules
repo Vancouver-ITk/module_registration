@@ -1,0 +1,3 @@
+[submodule "database-batches"]
+	path = database-batches
+	url = https://gitlab.cern.ch/atlas-itk-production-software/strips/liverpool-scripts/database-batches.git
