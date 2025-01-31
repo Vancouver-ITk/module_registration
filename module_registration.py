@@ -4,8 +4,18 @@ import os
 import tkinter as tk
 from tkinter.constants import DISABLED, NORMAL
 import itkdb
+import importlib
 # import create_modules as qm # functions from QMUL scripts (author: Paul Miyagawa)
-import database_batches as add_batch # functions from Liverpool scripts (author: Sven Wonsak)
+# add_batch = importlib.import_module('database-batches.add_to_batch') # functions from Liverpool scripts (author: Sven Wonsak)
+
+from sys import path as sys_dot_path
+this_file_directory = os.path.dirname(os.path.abspath(__file__))
+print(this_file_directory)
+sys_dot_path.insert(1, this_file_directory + '/../../database-batches/')
+
+import add_to_batch as add_batch
+
+
 
 
 # VARIABLES TO EDIT / DEFAULT VALUES
@@ -109,15 +119,19 @@ def register_component():
       add_batch.main(client, component['component']['serialNumber'], batch, batch_type='MODULE_BATCH', check_prefix=True)
     except UnboundLocalError:
       print("Error: A value may have been missed, check module ty own list.")
+    except Exception: 
+        if (('uuAppErrorMap')=={}):
+          output_text.set('Module Registration Successful!')
+        elif (('uuAppErrorMap'))[0]=='ucl-itkpd-main/assembleComponent/componentAtDifferentLocation/':
+          output_text.set("Child sensor component is not in the same location as parent module.")
+        elif(('uuAppErrorMap'))[0]=='ucl-itkpd-main/assembleComponent/childComponentAlreadyAssembled/':
+          output_text.set("Sensor is already assembled to another module.")     
+      
 
   # update_tab_count(client, tab_sheet)    
 
     # potential error messages - add when they come up
-  if (('uuAppErrorMap')=={}):
-      output_text.set('Module Registration Successful!')
-  elif (('uuAppErrorMap'))[0]=='ucl-itkpd-main/assembleComponent/componentAtDifferentLocation/':
-      output_text.set("Child sensor component is not in the same location as parent module.")
-    
+
 # adapted from qm script - not needed for now 
 '''
 def get_tab_number(tab_SN, hvtabRespJ ):
