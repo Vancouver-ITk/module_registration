@@ -57,8 +57,11 @@ DEFAULT_R5M1_TAB_JIG = "20USERT0510906"
 ```
 
 INSTITUTE: This is mandatory to set. This is the user's institute code.
+
 DEFAULT_BATCH: This is optional to set, if you leave it empty (eg. "") then the user will have enter it in the GUI. If populated, then when opening the GUI, the batch field will be autofilled with value specified above (eg. "PPC_SFU"). This can be overwritten in GUI if necessary.
+
 CURRENT_x_TAB_SHEET: This is optional to set, if you leave it empty (eg. "") then the user will have enter it in the GUI. If set, then after choosing the module type and then pressing 'Autofill', the Tab Sheet field will be autofilled with value specified above (eg. "20USEVS0200683" for modules that use short tabs). This can be overwritten in GUI if necessary.
+
 DEFAULT_x_TAB_JIG: This is optional to set, if you leave it empty (eg. "") then the user will have enter it in the GUI. If set, then after choosing the module type and then pressing 'Autofill', the Tab Jig field will be autofilled with value specified above (eg. "20USERT0131099" for R1 module). This can be overwritten in GUI if necessary.
 
 
@@ -78,5 +81,5 @@ Linux/MAC:
 python3 module_registration.py
 ```
 
-The GUI will pop up and have to sign into the database, enter the parameters for module you are registering, and then a module with it's specified sensor will be registered in the ITkPD. 
+The GUI will pop up and you will have to sign into the database, enter the parameters for the module you are registering, and then a module with it's specified sensor will be registered in the ITkPD. 
 
