@@ -59,18 +59,82 @@ def authenticate_user():
         output_text.set("Database authorization successful!")
     except:
         output_text.set("Database credentials were entered incorrectly. Try again.")
-
   else: output_text.set("Passcodes weren't entered")
 
   return client
   # client.set(client)
 
-# not used yet
-def read_config_file(module_type, file):
-  # reads in configuration file and then 
-  print("ignore")
-     
-    
+
+def set_local_name(mod_type):
+  # open file 
+  file = open("PPC_local_name_numbers.txt", "r")
+
+  content = file.readlines() 
+
+  num_count = "0000"
+  if (mod_type == "R1"):
+    num_count = content[1]
+  elif (mod_type == "R2"):
+    num_count = content[3]
+  elif (mod_type == "R4M0"):
+    num_count = content[5]
+  elif (mod_type == "R4M1"):
+    num_count = content[7]
+  elif (mod_type == "R5M0"):
+    num_count = content[9]
+  elif (mod_type == "R5M1"):
+    num_count = content[11]
+
+  prod_phase = DEFAULT_BATCH.split('_')[0]
+  inst = DEFAULT_BATCH.split('_')[1]
+  temp = inst + '_' + mod_type + '_' + prod_phase + '_' + num_count
+  mod_local = str(temp)
+
+  return mod_local 
+
+
+def update_local_num(mod_type):
+  # open file 
+  with open('PPC_local_name_numbers.txt', 'r', encoding='utf-8') as file:
+    content = file.readlines() 
+    num_count = "0000"
+    if (mod_type == "R1"):
+      num_count = content[1]
+    elif (mod_type == "R2"):
+      num_count = content[3]
+    elif (mod_type == "R4M0"):
+      num_count = content[5]
+    elif (mod_type == "R4M1"):
+      num_count = content[7]
+    elif (mod_type == "R5M0"):
+      num_count = content[9]
+    elif (mod_type == "R5M1"):
+      num_count = content[11]
+
+  # convert count to integer to increment it by 1
+  num_count_int = int(num_count)
+  num_count_int+=1
+
+  # convert back to string 
+  num_count_str = str(num_count_int)
+
+  #write file line based on module type 
+  if (mod_type == "R1"):
+    content[1] = num_count_str = str(num_count_int)
+  elif (mod_type == "R2"):
+    content[4] = num_count_str = str(num_count_int)
+  elif (mod_type == "R4M0"):
+    content[7] = num_count_str = str(num_count_int)
+  elif (mod_type == "R4M1"):
+    content[10] = num_count_str = str(num_count_int)
+  elif (mod_type == "R5M0"):
+    content[13] = num_count_str = str(num_count_int)
+  elif (mod_type == "R5M1"):
+    content[16] = num_count_str = str(num_count_int)
+
+  with open('PPC_local_name_numbers.txt', 'w', encoding='utf-8') as file:
+    file.writelines(content)
+
 
 def register_component():
 
@@ -130,6 +194,7 @@ def register_component():
 
     try: 
       component = client.post("registerComponent", json=data) 
+      update_local_num(module_type)
       add_batch.main(client, component['component']['serialNumber'], batch, batch_type='MODULE_BATCH', check_prefix=True)
     except UnboundLocalError:
       print("Error: A value may have been missed, check if module type is still entered.")
@@ -260,6 +325,14 @@ tab_sheet_box = tk.Entry(frame, textvariable = tab_sheet,  justify = 'left', wid
 tab_sheet_box.place(x = ENTRY_X + 175, y = ENTRY_Y + 220)
 
 def autofill():
+  # clear all the boxes 
+  tab_jig_box.delete(0, tk.END)
+  tab_jig_box.insert(0, "")
+  tab_sheet_box.delete(0, tk.END)
+  tab_sheet_box.insert(0, "")
+  local_box.delete(0, tk.END)
+  local_box.insert(0, "")
+
   module_type = module_box.get(module_box.curselection()[0])
 
   if module_type == "R1":
@@ -281,7 +354,10 @@ def autofill():
     tab_jig_box.insert(0, DEFAULT_R5M1_TAB_JIG) 
     tab_sheet_box.insert(0, CURRENT_LONG_TAB_SHEET)  
 
-autofill_button = tk.Button(frame, text = "Auto-fill", command = lambda: autofill())
+  local_box.insert(0, set_local_name(module_type))  
+
+
+autofill_button = tk.Button(frame, text = "Autofill", command = lambda: autofill())
 autofill_button.place(x = ENTRY_X + 15, y = ENTRY_Y + 320)
 
 batch_label = tk.Label(frame, text="Batch:")
