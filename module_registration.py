@@ -115,26 +115,23 @@ def update_local_num(mod_type):
   num_count_int = int(num_count)
   num_count_int+=1
 
-  # convert back to string 
-  num_count_str = str(num_count_int)
-
-  #write file line based on module type 
+  # convert back to string write file line based on module type 
   if (mod_type == "R1"):
-    content[1] = num_count_str = str(num_count_int)
+    content[1] = str(num_count_int)
   elif (mod_type == "R2"):
-    content[4] = num_count_str = str(num_count_int)
+    content[3] = str(num_count_int) + "\n"
   elif (mod_type == "R4M0"):
-    content[7] = num_count_str = str(num_count_int)
+    content[5] = str(num_count_int)
   elif (mod_type == "R4M1"):
-    content[10] = num_count_str = str(num_count_int)
+    content[7] = str(num_count_int)
   elif (mod_type == "R5M0"):
-    content[13] = num_count_str = str(num_count_int)
+    content[9] = str(num_count_int)
   elif (mod_type == "R5M1"):
-    content[16] = num_count_str = str(num_count_int)
+    content[11] = str(num_count_int)
 
   with open('PPC_local_name_numbers.txt', 'w', encoding='utf-8') as file:
     file.writelines(content)
-
+    file.close()
 
 def register_component():
 
