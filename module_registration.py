@@ -176,7 +176,7 @@ def register_component():
 
     data={'project': "S", 
           'subproject': "SE", 
-          'institution': "SFU",
+          'institution': INSTITUTE,
           'componentType': "MODULE",
           'type': module_type,
           'properties': {'LOCALNAME': local, 'HV_TAB_ASSEMBLY_JIG': jig},
