@@ -12,18 +12,18 @@ import json
 from sys import path as sys_dot_path
 this_file_directory = os.path.dirname(os.path.abspath(__file__))
 print(this_file_directory)
-sys_dot_path.insert(1, this_file_directory + '/../../database-batches/')
+sys_dot_path.insert(1, this_file_directory + '/database-batches/')
 
 import add_to_batch as add_batch
 
 
 # VARIABLES TO EDIT / DEFAULT VALUES
-INSTITUTE = "SFU"
-DEFAULT_BATCH = "PPC_SFU"
+INSTITUTE = "TRIUMF"
+DEFAULT_BATCH = "PPC_TRIUMF"
 DEFAULT_LOCAL_NAME = ""
 
 CURRENT_LONG_TAB_SHEET = "20USEVL0200221"
-CURRENT_SHORT_TAB_SHEET = "20USEVS0200683"
+CURRENT_SHORT_TAB_SHEET = "20USEVS0200678"
 
 DEFAULT_R1_TAB_JIG = "20USERT0131099"
 DEFAULT_R2_TAB_JIG = "20USERT0245005"
@@ -76,18 +76,19 @@ def set_local_name(mod_type):
     num_count = content[1]
   elif (mod_type == "R2"):
     num_count = content[3]
-  elif (mod_type == "R4M0"):
+  elif (mod_type == "R4M0_HALFMODULE"):
     num_count = content[5]
-  elif (mod_type == "R4M1"):
+  elif (mod_type == "R4M1_HALFMODULE"):
     num_count = content[7]
-  elif (mod_type == "R5M0"):
+  elif (mod_type == "R5M0_HALFMODULE"):
     num_count = content[9]
-  elif (mod_type == "R5M1"):
+  elif (mod_type == "R5M1_HALFMODULE"):
     num_count = content[11]
 
   prod_phase = DEFAULT_BATCH.split('_')[0]
   inst = DEFAULT_BATCH.split('_')[1]
-  temp = inst + '_' + mod_type + '_' + prod_phase + '_' + num_count
+  module_type = mod_type.split('_')[0]
+  temp = inst + '_' + module_type + '_' + prod_phase + '_' + num_count
   mod_local = str(temp)
 
   return mod_local 
@@ -102,13 +103,13 @@ def update_local_num(mod_type):
       num_count = content[1]
     elif (mod_type == "R2"):
       num_count = content[3]
-    elif (mod_type == "R4M0"):
+    elif (mod_type == "R4M0_HALFMODULE"):
       num_count = content[5]
-    elif (mod_type == "R4M1"):
+    elif (mod_type == "R4M1_HALFMODULE"):
       num_count = content[7]
-    elif (mod_type == "R5M0"):
+    elif (mod_type == "R5M0_HALFMODULE"):
       num_count = content[9]
-    elif (mod_type == "R5M1"):
+    elif (mod_type == "R5M1_HALFMODULE"):
       num_count = content[11]
 
   # convert count to integer to increment it by 1
@@ -120,14 +121,14 @@ def update_local_num(mod_type):
     content[1] = str(num_count_int)
   elif (mod_type == "R2"):
     content[3] = str(num_count_int) + "\n"
-  elif (mod_type == "R4M0"):
-    content[5] = str(num_count_int)
-  elif (mod_type == "R4M1"):
-    content[7] = str(num_count_int)
-  elif (mod_type == "R5M0"):
-    content[9] = str(num_count_int)
-  elif (mod_type == "R5M1"):
-    content[11] = str(num_count_int)
+  elif (mod_type == "R4M0_HALFMODULE"):
+    content[5] = str(num_count_int) + "\n"
+  elif (mod_type == "R4M1_HALFMODULE"):
+    content[7] = str(num_count_int) + "\n"
+  elif (mod_type == "R5M0_HALFMODULE"):
+    content[9] = str(num_count_int) + "\n"
+  elif (mod_type == "R5M1_HALFMODULE"):
+    content[11] = str(num_count_int) + "\n"
 
   with open('PPC_local_name_numbers.txt', 'w', encoding='utf-8') as file:
     file.writelines(content)
@@ -304,10 +305,10 @@ module_box = tk.Listbox(frame, width = 20, relief = 'groove', height = '6')
 module_box.place(x = ENTRY_X + 15, y = ENTRY_Y + 200)
 module_box.insert(1,"R1")
 module_box.insert(2,"R2")
-module_box.insert(5,"R4M0 Half module")
-module_box.insert(6,"R4M1 Half module")
-module_box.insert(7,"R5M0 Half module")
-module_box.insert(8,"R5M1 Half module")        
+module_box.insert(5,"R4M0_HALFMODULE")
+module_box.insert(6,"R4M1_HALFMODULE")
+module_box.insert(7,"R5M0_HALFMODULE")
+module_box.insert(8,"R5M1_HALFMODULE")        
 
 
 tab_jig_label = tk.Label(frame, text="HV Tabbing Jig SN:")
@@ -337,16 +338,16 @@ def autofill():
   elif module_type == "R2":
     tab_jig_box.insert(0, DEFAULT_R2_TAB_JIG) 
     tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET) 
-  elif module_type == "R4M0":
+  elif module_type == "R4M0_HALFMODULE":
     tab_jig_box.insert(0, DEFAULT_R4M0_TAB_JIG) 
     tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET) 
-  elif module_type == "R4M1":
+  elif module_type == "R4M1_HALFMODULE":
     tab_jig_box.insert(0, DEFAULT_R4M1_TAB_JIG) 
     tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET)   
-  elif module_type == "R5M0":
+  elif module_type == "R5M0_HALFMODULE":
     tab_jig_box.insert(0, DEFAULT_R5M0_TAB_JIG) 
     tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET)
-  elif module_type == "R5M1":
+  elif module_type == "R5M1_HALFMODULE":
     tab_jig_box.insert(0, DEFAULT_R5M1_TAB_JIG) 
     tab_sheet_box.insert(0, CURRENT_LONG_TAB_SHEET)  
 
