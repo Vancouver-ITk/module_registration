@@ -48,7 +48,7 @@ def authenticate_user():
   if db_passcode_1 and db_passcode_2:
     try :
         db_user_box.configure(state=NORMAL)
-        user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2)
+        user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2)
         client = itkdb.Client(user=user)
         client.user.authenticate()
         user = client.get('getUser', json={'userIdentity': client.user.identity})
@@ -149,7 +149,6 @@ def register_component():
       local = local_name.get()
       batch = batch_name.get()
     
-
       # Verify that user is entering real componenets
 
       sensor_component = get_component_details(client, sensor)
@@ -301,14 +300,14 @@ sensor_box.place(x = ENTRY_X + 15, y = ENTRY_Y + 170)
 
 module_label = tk.Label(frame, text='Module Type:')
 module_label.place(x = ENTRY_X - 75, y = ENTRY_Y + 200)
-module_box = tk.Listbox(frame, width = 10, relief = 'groove', height = '6')
+module_box = tk.Listbox(frame, width = 20, relief = 'groove', height = '6')
 module_box.place(x = ENTRY_X + 15, y = ENTRY_Y + 200)
 module_box.insert(1,"R1")
 module_box.insert(2,"R2")
-module_box.insert(5,"R4M0")
-module_box.insert(6,"R4M1")
-module_box.insert(7,"R5M0")
-module_box.insert(8,"R5M1")        
+module_box.insert(5,"R4M0 Half module")
+module_box.insert(6,"R4M1 Half module")
+module_box.insert(7,"R5M0 Half module")
+module_box.insert(8,"R5M1 Half module")        
 
 
 tab_jig_label = tk.Label(frame, text="HV Tabbing Jig SN:")
