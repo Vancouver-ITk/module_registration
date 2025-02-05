@@ -118,7 +118,7 @@ def update_local_num(mod_type):
 
   # convert back to string write file line based on module type 
   if (mod_type == "R1"):
-    content[1] = str(num_count_int)
+    content[1] = str(num_count_int) + "\n"
   elif (mod_type == "R2"):
     content[3] = str(num_count_int) + "\n"
   elif (mod_type == "R4M0_HALFMODULE"):
