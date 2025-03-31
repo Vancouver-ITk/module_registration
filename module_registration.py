@@ -48,7 +48,8 @@ def authenticate_user():
   if db_passcode_1 and db_passcode_2:
     try :
         db_user_box.configure(state=NORMAL)
-        user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2)
+        user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2) # this works for TRIUMF
+        # user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2) # this works for SFU
         client = itkdb.Client(user=user)
         client.user.authenticate()
         user = client.get('getUser', json={'userIdentity': client.user.identity})
