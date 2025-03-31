@@ -12,23 +12,23 @@ import json
 from sys import path as sys_dot_path
 this_file_directory = os.path.dirname(os.path.abspath(__file__))
 print(this_file_directory)
-sys_dot_path.insert(1, this_file_directory + '/database-batches/')
+sys_dot_path.insert(1, this_file_directory + '/../../database-batches/')
 
 import add_to_batch as add_batch
 
 
 # VARIABLES TO EDIT / DEFAULT VALUES
 INSTITUTE = "TRIUMF"
-DEFAULT_BATCH = "PPC_TRIUMF"
+DEFAULT_BATCH = "PRESERIES_TRIUMF"
 DEFAULT_LOCAL_NAME = ""
 
-CURRENT_LONG_TAB_SHEET = "20USEVL0200221"
-CURRENT_SHORT_TAB_SHEET = "20USEVS0200678"
+CURRENT_LONG_TAB_SHEET = "20USEVL0200231"
+CURRENT_SHORT_TAB_SHEET = "20USEVS0200697"
 
-DEFAULT_R1_TAB_JIG = "20USERT0131099"
+DEFAULT_R1_TAB_JIG = "20USERT0131102"
 DEFAULT_R2_TAB_JIG = "20USERT0245005"
-DEFAULT_R4M0_TAB_JIG = "20USERT0442012"
-DEFAULT_R4M1_TAB_JIG = "20USERT0442012"
+DEFAULT_R4M0_TAB_JIG = "20USERT0442014"
+DEFAULT_R4M1_TAB_JIG = "20USERT0442014"
 DEFAULT_R5M0_TAB_JIG = "20USERT0510906"
 DEFAULT_R5M1_TAB_JIG = "20USERT0510906"
 
@@ -48,7 +48,7 @@ def authenticate_user():
   if db_passcode_1 and db_passcode_2:
     try :
         db_user_box.configure(state=NORMAL)
-        user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2)
+        user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2)
         client = itkdb.Client(user=user)
         client.user.authenticate()
         user = client.get('getUser', json={'userIdentity': client.user.identity})
@@ -67,23 +67,23 @@ def authenticate_user():
 
 def set_local_name(mod_type):
   # open file 
-  file = open("PPC_local_name_numbers.txt", "r")
-
+  file = open("C:\\Users\\archa\\Desktop\\ATLASITk\\UploadScripts\\module_registration\\PPC_local_name_numbers.txt", "r")
+  
   content = file.readlines() 
 
   num_count = "0000"
   if (mod_type == "R1"):
-    num_count = content[1]
+    num_count = content[1].zfill(5)
   elif (mod_type == "R2"):
-    num_count = content[3]
+    num_count = content[3].zfill(5)
   elif (mod_type == "R4M0_HALFMODULE"):
-    num_count = content[5]
+    num_count = content[5].zfill(5)
   elif (mod_type == "R4M1_HALFMODULE"):
-    num_count = content[7]
+    num_count = content[7].zfill(5)
   elif (mod_type == "R5M0_HALFMODULE"):
-    num_count = content[9]
+    num_count = content[9].zfill(5)
   elif (mod_type == "R5M1_HALFMODULE"):
-    num_count = content[11]
+    num_count = content[11].zfill(5)
 
   prod_phase = DEFAULT_BATCH.split('_')[0]
   inst = DEFAULT_BATCH.split('_')[1]
@@ -96,7 +96,7 @@ def set_local_name(mod_type):
 
 def update_local_num(mod_type):
   # open file 
-  with open('PPC_local_name_numbers.txt', 'r', encoding='utf-8') as file:
+  with open("C:\\Users\\archa\\Desktop\\ATLASITk\\UploadScripts\\module_registration\\PPC_local_name_numbers.txt", 'r', encoding='utf-8') as file:
     content = file.readlines() 
     num_count = "0000"
     if (mod_type == "R1"):
