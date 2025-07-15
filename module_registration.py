@@ -18,15 +18,15 @@ import add_to_batch as add_batch
 
 
 # VARIABLES TO EDIT / DEFAULT VALUES
-INSTITUTE = "TRIUMF"
-DEFAULT_BATCH = "PRESERIES_TRIUMF"
+INSTITUTE = "SFU"
+DEFAULT_BATCH = "PRESERIES_SFU"
 DEFAULT_LOCAL_NAME = ""
 
 CURRENT_LONG_TAB_SHEET = "20USEVL0200231"
-CURRENT_SHORT_TAB_SHEET = "20USEVS0200697"
+CURRENT_SHORT_TAB_SHEET = "20USEVS0200683"
 
 DEFAULT_R1_TAB_JIG = "20USERT0131102"
-DEFAULT_R2_TAB_JIG = "20USERT0245005"
+DEFAULT_R2_TAB_JIG = "20USERT0245004"
 DEFAULT_R4M0_TAB_JIG = "20USERT0442014"
 DEFAULT_R4M1_TAB_JIG = "20USERT0442014"
 DEFAULT_R5M0_TAB_JIG = "20USERT0510906"
@@ -48,8 +48,8 @@ def authenticate_user():
   if db_passcode_1 and db_passcode_2:
     try :
         db_user_box.configure(state=NORMAL)
-        user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2) # this works for TRIUMF
-        # user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2) # this works for SFU
+        # user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2) # this works for TRIUMF
+        user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2) # this works for SFU
         client = itkdb.Client(user=user)
         client.user.authenticate()
         user = client.get('getUser', json={'userIdentity': client.user.identity})
@@ -68,7 +68,7 @@ def authenticate_user():
 
 def set_local_name(mod_type):
   # open file 
-  file = open("C:\\Users\\archa\\Desktop\\ATLASITk\\UploadScripts\\module_registration\\PPC_local_name_numbers.txt", "r")
+  file = open("PRESERIES_local_name_numbers.txt", "r")
   
   content = file.readlines() 
 
@@ -87,9 +87,14 @@ def set_local_name(mod_type):
     num_count = content[11].zfill(5)
 
   prod_phase = DEFAULT_BATCH.split('_')[0]
+  prod_phase_short = prod_phase
+  if prod_phase == "PRESERIES":
+    prod_phase_short = "PRE"
+  if prod_phase == "PRODUCTION":
+    prod_phase_short = "PROD"  
   inst = DEFAULT_BATCH.split('_')[1]
   module_type = mod_type.split('_')[0]
-  temp = inst + '_' + module_type + '_' + prod_phase + '_' + num_count
+  temp = inst + '_' + module_type + '_' + prod_phase_short + '_' + num_count
   mod_local = str(temp)
 
   return mod_local 
@@ -97,7 +102,7 @@ def set_local_name(mod_type):
 
 def update_local_num(mod_type):
   # open file 
-  with open("C:\\Users\\archa\\Desktop\\ATLASITk\\UploadScripts\\module_registration\\PPC_local_name_numbers.txt", 'r', encoding='utf-8') as file:
+  with open("PRESERIES_local_name_numbers.txt", 'r', encoding='utf-8') as file:
     content = file.readlines() 
     num_count = "0000"
     if (mod_type == "R1"):
@@ -158,6 +163,16 @@ def register_component():
       if sensor_component == None: 
          output_text.set("ERROR: Sensor not found in database")
          return
+      # check sensor location 
+      if sensor_component['currentLocation']['code'] != INSTITUTE:
+        output_text.set("ERROR: Sensor isn't at correct institute")
+        return
+      # check sensor stage
+      if sensor_component['currentStage']['code'] != "READY_FOR_MODULE":
+        output_text.set("ERROR: Sensor isn't in correct stage")
+        return
+      # check sensor stage
+      print(sensor_component['parents'])
       
       jig_component = get_component_details(client, jig)
       # check if HV tab jig exists
@@ -199,13 +214,6 @@ def register_component():
     except Exception as e: 
       print(e)
       output_text.set("Error: New module could not be registered, see terminal for more details.")  
-    
-      # if (exc.response.json['uuAppErrorMap'][0] == "ucl-itkpd-main/assembleComponent/componentAtDifferentLocation"):
-      #   output_text.set("Child sensor component is not in the same location as parent module.")
-      # elif (exc.response.json['uuAppErrorMap'][0] == "ucl-itkpd-main/assembleComponent/childComponentAlreadyAssembled"):
-      #   output_text.set("Sensor is already assembled to another module. (Important note: Module was still created in the database without sensor child)") 
-      # else:  
-      #   output_text.set("Error in registering module.")  
 
     try: 
       child = client.post("assembleComponent", json={'parent': component['component']['serialNumber'], 'child': sensor_component['id'], 'properties': {'HV_TAB_SHEET': sheet}})
