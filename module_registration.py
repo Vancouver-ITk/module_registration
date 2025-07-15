@@ -18,15 +18,15 @@ import add_to_batch as add_batch
 
 
 # VARIABLES TO EDIT / DEFAULT VALUES
-INSTITUTE = "SFU"
-DEFAULT_BATCH = "PRESERIES_SFU"
+INSTITUTE = "TRIUMF"
+DEFAULT_BATCH = "PRESERIES_TRIUMF"
 DEFAULT_LOCAL_NAME = ""
 
 CURRENT_LONG_TAB_SHEET = "20USEVL0200231"
-CURRENT_SHORT_TAB_SHEET = "20USEVS0200683"
+CURRENT_SHORT_TAB_SHEET = "20USEVS0200697"
 
 DEFAULT_R1_TAB_JIG = "20USERT0131102"
-DEFAULT_R2_TAB_JIG = "20USERT0245004"
+DEFAULT_R2_TAB_JIG = "20USERT0245005"
 DEFAULT_R4M0_TAB_JIG = "20USERT0442014"
 DEFAULT_R4M1_TAB_JIG = "20USERT0442014"
 DEFAULT_R5M0_TAB_JIG = "20USERT0510906"
@@ -48,8 +48,8 @@ def authenticate_user():
   if db_passcode_1 and db_passcode_2:
     try :
         db_user_box.configure(state=NORMAL)
-        # user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2) # this works for TRIUMF
-        user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2) # this works for SFU
+        user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2) # this works for TRIUMF
+        # user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2) # this works for SFU
         client = itkdb.Client(user=user)
         client.user.authenticate()
         user = client.get('getUser', json={'userIdentity': client.user.identity})
