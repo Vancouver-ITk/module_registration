@@ -6,6 +6,7 @@ from tkinter.constants import DISABLED, NORMAL
 import itkdb
 import json
 import requests
+import pandas as pd
 # import importlib
 # import create_modules as qm # functions from QMUL scripts (author: Paul Miyagawa)
 # add_batch = importlib.import_module('database-batches.add_to_batch') # functions from Liverpool scripts (author: Sven Wonsak)
@@ -24,8 +25,8 @@ INSTITUTE = "SFU"
 DEFAULT_BATCH = "iPRODUCTION_SFU"
 DEFAULT_LOCAL_NAME = ""
 
-CURRENT_LONG_TAB_SHEET = "20USEVL0200231"
-CURRENT_SHORT_TAB_SHEET = "20USEVS0200683"
+CURRENT_LONG_TAB_SHEET = ["20USEVL0200231"]
+CURRENT_SHORT_TAB_SHEET = ["20USEVS0200683", "20USEVS0200719", "20USEVS0200720"]
 
 DEFAULT_R1_TAB_JIG = "20USERT0131102"
 DEFAULT_R2_TAB_JIG = "20USERT0245004"
@@ -68,39 +69,10 @@ def authenticate_user():
   # client.set(client)
 
 
-def get_last_local_name(mod_type):
 
+def set_local_name(mod_type):
+  
   global client
-
-  listComponentByPropDtoIn = {
-    'filterMap': {
-      'project': 'S',
-      'state': 'ready',
-      'componentType': 'MODULE',
-      # 'type': mod_type,
-      'propertyFilter': [{
-        'code': 'institute',
-        'operator': "=",
-        'value': INSTITUTE 
-      }],
-    },
-    'pageInfo': {
-      'pageIndex': 0,
-      'pageSize': 1000
-    }
-  }
-
-  listComponentsByPropDtoIn = {
-      'project': 'S',
-      'state': 'ready',
-      'componentType': 'MODULE',
-      # 'type': mod_type,
-      'propertyFilter': [{
-        'code': 'institute',
-        'operator': "=",
-        'value': INSTITUTE 
-      }],
-  }
 
   listComponentsDtoIn = {
     'filterMap': {
@@ -116,14 +88,23 @@ def get_last_local_name(mod_type):
       'pageSize': 1000
     }
   }
-  # modules = client.get("listComponentsByProperty", json=listComponentsByPropDtoIn)
-  # modules = dbAccess.doSomething(action = 'listComponentsByProperty', method='GET', data = listComponentsByPropDtoIn)
-  # ('listComponentsByProperty', 'POST', data = {'project': 'S', 'componentType': abc_wafer_code, 'propertyFilter': [{'code': 'ABCWAFERNAME', 'operator': '=', 'value': wafer}]})
-  # modules = client.get("listComponentsByProperty", json=listComponentsDtoIn)
-  # print(modules["itemList"])
-  # last_module = modules.items[-1]
-  # print(last_module)
-  # open file 
+  modules = client.get("listComponents", json=listComponentsDtoIn)
+  modules_df = pd.DataFrame.from_records(modules)
+
+  old_name = ''
+  last_module = modules_df.tail(1)
+  for list in last_module['properties']: 
+    for prop in list:
+      if prop.get('code') == 'LOCALNAME':
+        old_name = prop.get('value')
+        temp = old_name.split('_')[-1]
+        old_num = int(temp.split('\n')[0])
+  new_num = old_num+1
+  num_count = '0000'
+  num_count = str(new_num).zfill(4)
+
+  # OLD METHOD - Using the txt file 
+  '''
   file = open("iPRODUCTION_local_name_numbers.txt", "r")
   
   content = file.readlines() 
@@ -141,41 +122,7 @@ def get_last_local_name(mod_type):
     num_count = content[9].zfill(5)
   elif (mod_type == "R5M1_HALFMODULE"):
     num_count = content[11].zfill(5)
-
-  prod_phase = DEFAULT_BATCH.split('_')[0]
-  prod_phase_short = prod_phase
-  if prod_phase == "PRESERIES":
-    prod_phase_short = "PRE"
-  if prod_phase == "PRODUCTION":
-    prod_phase_short = "PROD" 
-  if prod_phase == "iPRODUCTION":
-    prod_phase_short = "iPROD" 
-  inst = DEFAULT_BATCH.split('_')[1]
-  module_type = mod_type.split('_')[0]
-  temp = inst + '_' + module_type + '_' + prod_phase_short + '_' + num_count
-  mod_local = str(temp)
-
-  return mod_local 
-
-def set_local_name(mod_type):
-  # open file 
-  file = open("iPRODUCTION_local_name_numbers.txt", "r")
-  
-  content = file.readlines() 
-
-  num_count = "0000"
-  if (mod_type == "R1"):
-    num_count = content[1].zfill(5)
-  elif (mod_type == "R2"):
-    num_count = content[3].zfill(5)
-  elif (mod_type == "R4M0_HALFMODULE"):
-    num_count = content[5].zfill(5)
-  elif (mod_type == "R4M1_HALFMODULE"):
-    num_count = content[7].zfill(5)
-  elif (mod_type == "R5M0_HALFMODULE"):
-    num_count = content[9].zfill(5)
-  elif (mod_type == "R5M1_HALFMODULE"):
-    num_count = content[11].zfill(5)
+  '''
 
   prod_phase = DEFAULT_BATCH.split('_')[0]
   prod_phase_short = prod_phase
@@ -192,7 +139,7 @@ def set_local_name(mod_type):
 
   return mod_local 
 
-
+# OLD METHOD - dont need if we are using the database
 def update_local_num(mod_type):
   # open file 
   with open("iPRODUCTION_local_name_numbers.txt", 'r', encoding='utf-8') as file:
@@ -290,13 +237,9 @@ def register_component():
           # 'batches': {'number': "DEFAULT_BATCH", 'batchType': "MODULE_BATCH"}
           }
 
-  #  'batches': [{'id': '668eff1b8e930f004302da4d', 'number': 'PPC_SFU', 
-  #             'batchType': {'id': '646b881f931a9c0042134875', 'code': 'MODULE_BATCH', 'name': 'Module Batch'}, 
-  #             'state': 'ready', 'stateTs': '2024-11-21T21:45:40.577Z', 'stateUserIdentity': '7986-4353-1'}]
-
     try: 
       component = client.post("registerComponent", json=data) 
-      update_local_num(module_type)
+      # update_local_num(module_type) # Old local name method
       add_batch.main(client, component['component']['serialNumber'], batch, batch_type='MODULE_BATCH', check_prefix=True)
     except UnboundLocalError:
       print("Error: A value may have been missed, check if module type is still entered.")
@@ -432,24 +375,24 @@ def autofill():
 
   if module_type == "R1":
     tab_jig_box.insert(0, DEFAULT_R1_TAB_JIG) 
-    tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET) 
+    tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET[0]) 
   elif module_type == "R2":
     tab_jig_box.insert(0, DEFAULT_R2_TAB_JIG) 
-    tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET) 
+    tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET[0]) 
   elif module_type == "R4M0_HALFMODULE":
     tab_jig_box.insert(0, DEFAULT_R4M0_TAB_JIG) 
-    tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET) 
+    tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET[0]) 
   elif module_type == "R4M1_HALFMODULE":
     tab_jig_box.insert(0, DEFAULT_R4M1_TAB_JIG) 
-    tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET)   
+    tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET[0])   
   elif module_type == "R5M0_HALFMODULE":
     tab_jig_box.insert(0, DEFAULT_R5M0_TAB_JIG) 
-    tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET)
+    tab_sheet_box.insert(0, CURRENT_SHORT_TAB_SHEET[0])
   elif module_type == "R5M1_HALFMODULE":
     tab_jig_box.insert(0, DEFAULT_R5M1_TAB_JIG) 
-    tab_sheet_box.insert(0, CURRENT_LONG_TAB_SHEET)  
+    tab_sheet_box.insert(0, CURRENT_LONG_TAB_SHEET[0])  
 
-  local_box.insert(0, get_last_local_name(module_type))  
+  local_box.insert(0, set_local_name(module_type))  
 
 
 autofill_button = tk.Button(frame, text = "Autofill", command = lambda: autofill())
