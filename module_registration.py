@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter.constants import DISABLED, NORMAL
 import itkdb
 import json
+import requests
 # import importlib
 # import create_modules as qm # functions from QMUL scripts (author: Paul Miyagawa)
 # add_batch = importlib.import_module('database-batches.add_to_batch') # functions from Liverpool scripts (author: Sven Wonsak)
@@ -15,11 +16,12 @@ print(this_file_directory)
 sys_dot_path.insert(1, this_file_directory + '/../../database-batches/')
 
 import add_to_batch as add_batch
+# import itkdb.dbAccess as dbAccess
 
 
 # VARIABLES TO EDIT / DEFAULT VALUES
 INSTITUTE = "SFU"
-DEFAULT_BATCH = "PRESERIES_SFU"
+DEFAULT_BATCH = "iPRODUCTION_SFU"
 DEFAULT_LOCAL_NAME = ""
 
 CURRENT_LONG_TAB_SHEET = "20USEVL0200231"
@@ -66,9 +68,98 @@ def authenticate_user():
   # client.set(client)
 
 
+def get_last_local_name(mod_type):
+
+  global client
+
+  listComponentByPropDtoIn = {
+    'filterMap': {
+      'project': 'S',
+      'state': 'ready',
+      'componentType': 'MODULE',
+      # 'type': mod_type,
+      'propertyFilter': [{
+        'code': 'institute',
+        'operator': "=",
+        'value': INSTITUTE 
+      }],
+    },
+    'pageInfo': {
+      'pageIndex': 0,
+      'pageSize': 1000
+    }
+  }
+
+  listComponentsByPropDtoIn = {
+      'project': 'S',
+      'state': 'ready',
+      'componentType': 'MODULE',
+      # 'type': mod_type,
+      'propertyFilter': [{
+        'code': 'institute',
+        'operator': "=",
+        'value': INSTITUTE 
+      }],
+  }
+
+  listComponentsDtoIn = {
+    'filterMap': {
+      'project': 'S',
+      'state': 'ready',
+      'componentType': 'MODULE',
+      'type': mod_type,
+      'institute': INSTITUTE
+    },
+    'outputType': 'full',
+    'pageInfo': {
+      'pageIndex': 0,
+      'pageSize': 1000
+    }
+  }
+  # modules = client.get("listComponentsByProperty", json=listComponentsByPropDtoIn)
+  # modules = dbAccess.doSomething(action = 'listComponentsByProperty', method='GET', data = listComponentsByPropDtoIn)
+  # ('listComponentsByProperty', 'POST', data = {'project': 'S', 'componentType': abc_wafer_code, 'propertyFilter': [{'code': 'ABCWAFERNAME', 'operator': '=', 'value': wafer}]})
+  # modules = client.get("listComponentsByProperty", json=listComponentsDtoIn)
+  # print(modules["itemList"])
+  # last_module = modules.items[-1]
+  # print(last_module)
+  # open file 
+  file = open("iPRODUCTION_local_name_numbers.txt", "r")
+  
+  content = file.readlines() 
+
+  num_count = "0000"
+  if (mod_type == "R1"):
+    num_count = content[1].zfill(5)
+  elif (mod_type == "R2"):
+    num_count = content[3].zfill(5)
+  elif (mod_type == "R4M0_HALFMODULE"):
+    num_count = content[5].zfill(5)
+  elif (mod_type == "R4M1_HALFMODULE"):
+    num_count = content[7].zfill(5)
+  elif (mod_type == "R5M0_HALFMODULE"):
+    num_count = content[9].zfill(5)
+  elif (mod_type == "R5M1_HALFMODULE"):
+    num_count = content[11].zfill(5)
+
+  prod_phase = DEFAULT_BATCH.split('_')[0]
+  prod_phase_short = prod_phase
+  if prod_phase == "PRESERIES":
+    prod_phase_short = "PRE"
+  if prod_phase == "PRODUCTION":
+    prod_phase_short = "PROD" 
+  if prod_phase == "iPRODUCTION":
+    prod_phase_short = "iPROD" 
+  inst = DEFAULT_BATCH.split('_')[1]
+  module_type = mod_type.split('_')[0]
+  temp = inst + '_' + module_type + '_' + prod_phase_short + '_' + num_count
+  mod_local = str(temp)
+
+  return mod_local 
+
 def set_local_name(mod_type):
   # open file 
-  file = open("PRESERIES_local_name_numbers.txt", "r")
+  file = open("iPRODUCTION_local_name_numbers.txt", "r")
   
   content = file.readlines() 
 
@@ -92,6 +183,8 @@ def set_local_name(mod_type):
     prod_phase_short = "PRE"
   if prod_phase == "PRODUCTION":
     prod_phase_short = "PROD"  
+  if prod_phase == "iPRODUCTION":
+    prod_phase_short = "iPROD" 
   inst = DEFAULT_BATCH.split('_')[1]
   module_type = mod_type.split('_')[0]
   temp = inst + '_' + module_type + '_' + prod_phase_short + '_' + num_count
@@ -102,7 +195,7 @@ def set_local_name(mod_type):
 
 def update_local_num(mod_type):
   # open file 
-  with open("PRESERIES_local_name_numbers.txt", 'r', encoding='utf-8') as file:
+  with open("iPRODUCTION_local_name_numbers.txt", 'r', encoding='utf-8') as file:
     content = file.readlines() 
     num_count = "0000"
     if (mod_type == "R1"):
@@ -136,7 +229,7 @@ def update_local_num(mod_type):
   elif (mod_type == "R5M1_HALFMODULE"):
     content[11] = str(num_count_int) + "\n"
 
-  with open('PPC_local_name_numbers.txt', 'w', encoding='utf-8') as file:
+  with open('iPRODUCTION_local_name_numbers.txt', 'w', encoding='utf-8') as file:
     file.writelines(content)
     file.close()
 
@@ -159,20 +252,17 @@ def register_component():
       # Verify that user is entering real componenets
 
       sensor_component = get_component_details(client, sensor)
+      # go through some of the suspect checks
       # check if sensor exists
       if sensor_component == None: 
-         output_text.set("ERROR: Sensor not found in database")
-         return
-      # check sensor location 
-      if sensor_component['currentLocation']['code'] != INSTITUTE:
-        output_text.set("ERROR: Sensor isn't at correct institute")
+        output_text.set("ERROR: Sensor not found in database")
         return
-      # check sensor stage
-      if sensor_component['currentStage']['code'] != "READY_FOR_MODULE":
-        output_text.set("ERROR: Sensor isn't in correct stage")
-        return
-      # check sensor stage
-      print(sensor_component['parents'])
+
+
+      if (sensor_component['currentLocation']['code'] != INSTITUTE) or (sensor_component['currentStage']['code'] != "READY_FOR_MODULE") or (sensor_component['parents'][-1]['componentType']['code'] == 'MODULE'):
+            output_text.set("Sensor-related error: Something's wrong with  the sensor location and/or stage, or it may be assembled to a module.")
+            return
+  
       
       jig_component = get_component_details(client, jig)
       # check if HV tab jig exists
@@ -199,7 +289,6 @@ def register_component():
           'properties': {'LOCALNAME': local, 'HV_TAB_ASSEMBLY_JIG': jig},
           # 'batches': {'number': "DEFAULT_BATCH", 'batchType': "MODULE_BATCH"}
           }
-    
 
   #  'batches': [{'id': '668eff1b8e930f004302da4d', 'number': 'PPC_SFU', 
   #             'batchType': {'id': '646b881f931a9c0042134875', 'code': 'MODULE_BATCH', 'name': 'Module Batch'}, 
@@ -360,7 +449,7 @@ def autofill():
     tab_jig_box.insert(0, DEFAULT_R5M1_TAB_JIG) 
     tab_sheet_box.insert(0, CURRENT_LONG_TAB_SHEET)  
 
-  local_box.insert(0, set_local_name(module_type))  
+  local_box.insert(0, get_last_local_name(module_type))  
 
 
 autofill_button = tk.Button(frame, text = "Autofill", command = lambda: autofill())
