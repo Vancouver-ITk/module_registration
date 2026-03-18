@@ -21,7 +21,7 @@ import add_to_batch as add_batch
 
 
 # VARIABLES TO EDIT / DEFAULT VALUES
-INSTITUTE = "SFU"
+INSTITUTE = "TRIUMF"
 DEFAULT_BATCH = "iPRODUCTION_SFU"
 DEFAULT_LOCAL_NAME = ""
 
@@ -93,15 +93,20 @@ def set_local_name(mod_type):
 
   old_name = ''
   last_module = modules_df.tail(1)
+  print(last_module)
   for list in last_module['properties']: 
     for prop in list:
       if prop.get('code') == 'LOCALNAME':
         old_name = prop.get('value')
         temp = old_name.split('_')[-1]
-        old_num = int(temp.split('\n')[0])
-  new_num = old_num+1
-  num_count = '0000'
-  num_count = str(new_num).zfill(4)
+        batch = old_name.split('_')[2] # get the batch name
+        if batch in DEFAULT_BATCH: 
+          old_num = int(temp.split('\n')[0])
+          new_num = old_num+1
+          num_count = '0000'
+          num_count = str(new_num).zfill(4)
+        else: 
+          num_count = 'XXXX'
 
   # OLD METHOD - Using the txt file 
   '''

@@ -9,13 +9,13 @@ Install dependencies (tk and itkdb).
 Windows:
 
 ```
-pip install tk itkdb
+pip install tk itkdb pandas
 ```
 
 MAC:
 
 ```
-pip3 install tk itkdb
+pip3 install tk itkdb pandas
 ```
 
 CENTOS: 
