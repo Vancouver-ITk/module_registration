@@ -14,7 +14,7 @@ import pandas as pd
 from sys import path as sys_dot_path
 this_file_directory = os.path.dirname(os.path.abspath(__file__))
 print(this_file_directory)
-sys_dot_path.insert(1, this_file_directory + '/../../database-batches/')
+sys_dot_path.insert(1, this_file_directory + '/database-batches/')
 
 import add_to_batch as add_batch
 # import itkdb.dbAccess as dbAccess
@@ -22,7 +22,7 @@ import add_to_batch as add_batch
 
 # VARIABLES TO EDIT / DEFAULT VALUES
 INSTITUTE = "TRIUMF"
-DEFAULT_BATCH = "iPRODUCTION_SFU"
+DEFAULT_BATCH = "iPRODUCTION_TRIUMF"
 DEFAULT_LOCAL_NAME = ""
 
 CURRENT_LONG_TAB_SHEET = ["20USEVL0200231"]
@@ -51,8 +51,10 @@ def authenticate_user():
   if db_passcode_1 and db_passcode_2:
     try :
         db_user_box.configure(state=NORMAL)
-        # user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2) # this works for TRIUMF
-        user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2) # this works for SFU
+        if INSTITUTE == 'TRIUMF': # TRIUMF people have outdated itkdb versions
+          user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2) 
+        else: 
+          user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2) # supports newer itkdb version
         client = itkdb.Client(user=user)
         client.user.authenticate()
         user = client.get('getUser', json={'userIdentity': client.user.identity})
