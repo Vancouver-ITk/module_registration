@@ -21,7 +21,7 @@ import add_to_batch as add_batch
 
 
 # VARIABLES TO EDIT / DEFAULT VALUES
-INSTITUTE = "TRIUMF"
+INSTITUTE = "SFU"
 DEFAULT_BATCH = "iPRODUCTION_SFU"
 DEFAULT_LOCAL_NAME = ""
 
@@ -39,7 +39,8 @@ DEFAULT_R5M1_TAB_JIG = "20USERT0510906"
 ENTRY_X = 100
 ENTRY_Y = 20
 
-global data, client
+global data, client, new_sn
+new_sn = None
 
 # read in user info
 def authenticate_user():
@@ -51,7 +52,7 @@ def authenticate_user():
   if db_passcode_1 and db_passcode_2:
     try :
         db_user_box.configure(state=NORMAL)
-        # user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2) # this works for TRIUMF
+        # user = itkdb.core.User(accessCode1 = db_passcode_1, accessCode2 = db_passcode_2) # this works for older itkdb versions
         user = itkdb.core.User(access_code1 = db_passcode_1, access_code2 = db_passcode_2) # this works for SFU
         client = itkdb.Client(user=user)
         client.user.authenticate()
@@ -93,7 +94,6 @@ def set_local_name(mod_type):
 
   old_name = ''
   last_module = modules_df.tail(1)
-  print(last_module)
   for list in last_module['properties']: 
     for prop in list:
       if prop.get('code') == 'LOCALNAME':
@@ -187,7 +187,7 @@ def update_local_num(mod_type):
 
 def register_component():
 
-  global client
+  global client, new_sn
 
   if sensor_sn.get() == "" or module_box.curselection() == ():
     output_text.set("Please ensure that all mandatory fields are filled out.")
@@ -210,12 +210,10 @@ def register_component():
         output_text.set("ERROR: Sensor not found in database")
         return
 
-
       if (sensor_component['currentLocation']['code'] != INSTITUTE) or (sensor_component['currentStage']['code'] != "READY_FOR_MODULE") or (sensor_component['parents'][-1]['componentType']['code'] == 'MODULE'):
             output_text.set("Sensor-related error: Something's wrong with  the sensor location and/or stage, or it may be assembled to a module.")
             return
-  
-      
+        
       jig_component = get_component_details(client, jig)
       # check if HV tab jig exists
       if jig_component == None: 
@@ -254,15 +252,18 @@ def register_component():
 
     try: 
       child = client.post("assembleComponent", json={'parent': component['component']['serialNumber'], 'child': sensor_component['id'], 'properties': {'HV_TAB_SHEET': sheet}})
-      output_text.set("Module {0} successfully registered!".format(component['component']['serialNumber']))
+      new_sn = component['component']['serialNumber']
+      output_text.set("Module {0} successfully registered!".format(new_sn))
     except itkdb.exceptions.BadRequest as e:
       print(e)
       output_text.set("Error: Sensor could not be attached to module, see terminal for more details. \nIMPORTANT: Module {0} was still created in the database without it's sensor child!".format(component['component']['serialNumber']))   
       
+    # should return serial number
+    print("Newly registered module is: {}".format(new_sn))  
+
+    return new_sn
     
   # update_tab_count(client, tab_sheet)    
-
-   
 
 # adapted from qm script - not needed for now 
 '''
@@ -416,6 +417,7 @@ local_box.place(x = ENTRY_X + 175, y = ENTRY_Y + 320)
 
 reg_button = tk.Button(frame, text = "Register Module", command = lambda: register_component())
 reg_button.place(x = ENTRY_X + 100, y = ENTRY_Y + 370)
+ 
 
 output_text_box = tk.Message(frame, textvariable = output_text, font = ('calibri', 10), width = 344, relief = 'sunken', justify = 'left')
 output_text_box.place(x = ENTRY_X - 30, y = ENTRY_Y + 410)
